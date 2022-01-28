@@ -1,0 +1,98 @@
+#
+#  SME library makefile
+#
+#   Author: Victor Ginting
+#   Date:   06/18/2002
+#
+
+# C++ compiler (g++,CC), options
+include ../../Compiler.mk
+
+# Create the archive/library depending on $(HOSTTYPE). 
+ARiris4d     = ar sruv libsme.a $(SMEOBJS)
+ARi386-linux = ar ruv libsme.a $(SMEOBJS); \
+	       ranlib libsme.a
+ARi386       = ar ruv libsme.a $(SMEOBJS); \
+	       ranlib libsme.a
+ARsolsparc   = ar ruv libsme.a $(SMEOBJS); \
+	       ranlib libsme.a
+
+AR    = $(AR$(HOSTTYPE))
+
+# SME library source files
+SMECPPS =    Common.cc \
+             Grid.cc \
+             Region.cc \
+             Covariance.cc \
+             ExpCovariance.cc \
+             GaussCovariance.cc \
+             Perm.cc \
+             Fluid.cc \
+             Control.cc \
+             Well.cc \
+             Eqn.cc \
+             Solver.cc \
+             P0Eqn.cc \
+             CYPEqn.cc \
+             P2Eqn.cc \
+             CPPEqn.cc \
+             CPPDEqn.cc \
+             FullLUSolver.cc \
+             LapackBandSolver.cc \
+             LapackFullSolver.cc \
+             LapackSymBandSolver.cc \
+             ClubSolver.cc \
+             Velocity.cc \
+             BLSolution.cc \
+             FractionFlow.cc \
+             Saturation.cc \
+             Flow.cc \
+             Production.cc \
+             Domain.cc \
+             Block.cc \
+             Particle.cc \
+             ParticleTrack.cc \
+             Point.cc \
+             WellArc.cc \
+             MCTrvl.cc \
+             gauleg.cc \
+             pdf.cc \
+             MC2SME.cc \
+             CondiPress.cc \
+             MasterPoint.cc \
+             PressMeasure.cc \
+             KrigWeigh.cc \
+             ran3.cc \
+             P0_Sensitivity.cc \
+             PVar_Sensitivity.cc \
+             Penalty.cc
+
+SMEOBJS = $(SMECPPS:.cc=.o)
+
+# Build normal/debug versions of the SME library.
+all: opt
+
+# Build SME library
+lib:	$(SMECPPS)
+	$(CPP) $(CPPOPTS) -c $(SMECPPS) 
+	$(AR)
+
+# Build SME library with DEBUG flag
+debug:	$(SMECPPS)
+	$(CPP) $(CPPOPTS) $(DEBUGOPTS) -c $(SMECPPS)
+	$(AR:libsme.a=libsme_debug.a)
+
+# Build SME library with full optimization
+opt:	$(SMECPPS)
+	$(CPP) -D_GNU_SOURCE -c $(SMECPPS)
+	$(AR)
+
+# Clean unnecessary files
+clean:
+	rm -f core *.o
+
+# Clean also the libraries, backups
+veryclean:
+	rm -f core *.o *.a *~
+	rm -rf ii_files ti_files SunWS_cache
+

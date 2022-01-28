@@ -1,0 +1,7 @@
+Warning: no access to tty (Bad file descriptor).
+Thus no job control in this shell.
+term: Undefined variable.
+hyper034
+cp: cannot stat `flow.in': No such file or directory
+cp: cannot stat `/cpfs/fs2/data2/pipl/3DSME_64b0_pipat/wo10x10x3.deck': No such file or directory
+/var/spool/PBS/mom_priv/jobs/923584.hype.SC[122]: cannot open wo10x10x3.deck: No such file or directory

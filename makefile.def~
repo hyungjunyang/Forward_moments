@@ -1,0 +1,62 @@
+
+
+# g++ v. 2.7.0
+#
+CCC 			= g++
+CC 			= gcc	
+CCCFLAGS 		=   -DMV_VECTOR_BOUNDS_CHECK -g '-DCOMPLEX=complex<double>'  
+LDFLAGS			=   	$(SMELIB_DIR)/lib/smelib.a \
+				$(SMELIB_DIR)/lib/minimlib.a
+
+# g++ v. 3.2.3
+#
+CCC 			= g++
+CC 			= gcc	
+CCCFLAGS 		=
+LDFLAGS			=   	$(SMELIB_DIR)/lib/smelib.a  \
+				$(SMELIB_DIR)/lib/minimlib.a
+
+# ranlib available on this system? 't' or 'f'
+HASRANLIB = t
+
+
+################################################################
+#                                                              #
+#           Implicit rules: do not modify after here           #
+#                                                              #
+################################################################
+
+SMELIB_LIB_DIR		= $(SMELIB_DIR)/lib
+SMELIB_SRC_DIR		= $(SMELIB_DIR)/sme_lib
+SMELIB_SRC_INCLUDE_DIR	= $(SMELIB_SRC_DIR)/include
+
+SME_LIB_A		= $(SMELIB_DIR)/lib/smelib.a
+
+
+INCLUDES =  -I$(SMELIB_SRC_INCLUDE_DIR)
+
+
+EXENAME     = -o
+OBJ_EXT     = o
+LIB_EXT     = a
+EXE_EXT     =
+
+.SUFFIXES: .c .cc .o
+
+.cc.o:
+	$(CCC) $(CCCFLAGS)  $(INCLUDES) -c -g $<
+
+.c.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -g $<
+
+.f.o:
+	$(F77)  -c -g $<
+
+# LAPACK and BLAS Library
+# -----------------------------------
+#LAPACK_BLAS_LIBS = -L/usr/local/pgi/linux86-64/6.2/lib -llapack -lblas -lg2c -lm
+#LAPACK_BLAS_LIBS = -L/usr/local/pgi/linux86-64/6.2/lib -llapack -lblas -lm
+LAPACK_BLAS_LIBS = -L/home/pipatl/lapacklib -llapack -lblas -lg2c -lm
+#CLUB  = /data/rpo/liyl/Solver.Lib/club/clublib64b.a
+FOBJS = -L/vend/pgi/5.2-4/linux86-64/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgf90rtl -lpgftnrtl -lpgc -lgcc -lc -lm
+#FOBJS = -L/usr/local/pgi/linux86-64i/6.2/lib -lpgf90 -lpgf90_rpm1 -lpgf902 -lpgf90rtl -lpgftnrtl -lpgc -lgcc -lc -lm

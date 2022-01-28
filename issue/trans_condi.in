@@ -1,0 +1,12 @@
+## Total points in time
+2
+## At time t
+0.35 2		## time and total points in space at the time
+6  16 1 0.7		## i, j, k, and Sw
+16 6  1 0.0 	## i, j, k, and Sw
+## At time t
+0.5  2		## time and total points in space at the time
+16 6  1 0.4 	## i, j, k, and Sw
+6  16 1 0.0		## i, j, k, and Sw
+100 0.005 		## max iteration, error tolerance
+

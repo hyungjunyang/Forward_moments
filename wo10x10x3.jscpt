@@ -1,0 +1,128 @@
+#!/bin/ksh -p
+#PBS -q linux64@hyper.xcp.chevrontexaco.net
+#PBS -N wo10x10x38429
+#PBS -l nodes=1:ppn=1
+#PBS -m a
+
+#PBS -M pipl@mailmaster.xcp.chevrontexaco.net
+
+#PBS -j oe
+#PBS -o hyper.xcp.chevrontexaco.net:"/cpfs/fs2/data2/pipl/3DSME_64b0_pipat/wo10x10x3.eo"
+#PBS
+
+if [[ -n "$PBS_NODEFILE" ]] ; then
+  cat $PBS_NODEFILE
+fi
+
+export SIMTYPE="SERIAL"
+
+#export UTILBIN="/chap/chears/devel/dbin/chears.devel"
+##
+export UTILBIN="/cpfs/fs2/data2/pipl/3DSME_64b0_pipat/bin/SME3D"
+cp flow.in wo10x10x3.deck
+##
+export POSTCHEARS="/chap/chears/devel/sbin/postchears"
+export TECPLTBIN="/vend/tecplotrs/prod/bin"
+export caseDir="/cpfs/fs2/data2/pipl/3DSME_64b0_pipat"
+export CHEARS="$UTILBIN"
+export caseName="wo10x10x3"
+export deckName="wo10x10x3"
+tmpDir="/scr/a/data"
+tdf=".td_$caseName"
+
+if [ ! -s "$CHEARS" ] ; then
+  echo "Simulator: $CHEARS does not exist. Job aborted!" 2>&1
+  exit 1
+fi
+
+if [ ! -s "$POSTCHEARS" ] ; then
+  echo "Postchears: $POSTCHEARS does not exist. Job aborted!" 2>&1
+  exit 1
+fi
+
+wkDir="$tmpDir"
+if [ ! -s "$wkDir" ] ; then
+  echo "Could not access directory $wkDir, use case directory" 2>&1
+  wkDir="$caseDir"
+fi
+wkDir="$wkDir/tmp_wo10x10x3-$$"
+
+if [ ! -s "$wkDir" ] ; then
+  mkdir "$wkDir" 2>&1
+fi
+cd "$wkDir" || {
+  echo "Could not access workdir: $wkDir. Job aborted!" 2>&1
+  exit 1
+}
+if [ ! -s "$caseDir" ] ; then
+  /usr/bin/rcp hyper.xcp.chevrontexaco.net:"$caseDir/$deckName.deck" .
+else
+  cp -f "$caseDir/$deckName.deck" "$deckName.deck"
+fi
+
+cp $CHEARS 'chears_tmp'
+export CHEARS="./chears_tmp"
+
+#### Please don't change the settings for postchears.
+hostname > "$tdf"
+print "$wkDir" >> "$tdf"
+print "hyper.xcp.chevrontexaco.net" >> "$tdf"
+print "$caseDir" >> "$tdf"
+# other parameters (size=2)
+print 2 >> "$tdf"
+print "$UTILBIN" >> "$tdf"
+print "$TECPLTBIN" >> "$tdf"
+# Settings:
+#  1st number - combine output file in .prnt
+#  2th number - compress output files
+#  3rd number - generate reports (repgen)
+#  4nd number - Uncompress *.prnt, *.sim & *.sum
+#  5th number - set PBS running directory on local server
+#  6th number - sort well groups (wgsort)
+#  7th number - simulation job notification
+#  8th number - merge ECL output (eclmerge)
+#  9th number - run existing job script
+# 10th number - preprocess grid file for TecplotRS
+print ' 0 1 0 1 0 1 4 1 0 1' >> "$tdf"
+# Input File List
+print 1 >> "$tdf"
+print 'wo10x10x3.deck^^/cpfs/fs2/data2/pipl/3DSME_64b0_pipat' >> "$tdf"
+# Alternative Output File List
+print 0 >> "$tdf"
+if [ ! -s "$caseDir" ] ; then
+  /usr/bin/rcp "$tdf" hyper.xcp.chevrontexaco.net:"$caseDir"
+else
+  cp "$tdf" "$caseDir"
+fi
+#### End of the settings for postchears.
+
+if [[ -x /usr/local/pbs/bin/qstat ]] ; then
+   QSTAT="/usr/local/pbs/bin/qstat"
+else
+   QSTAT="qstat"
+fi
+
+set -A  CPUMASK "0x00000001" "0x00000002"
+if ( [ ! -z $PBS_JOBID ] && [ -x /usr/bin/taskset ] ) ; then
+   CPU=$($QSTAT -f $PBS_JOBID | grep exec_host | awk '{print $3}' | cut -f 2 -d/)
+   CPUSET="/usr/bin/taskset ${CPUMASK[$CPU]}"
+else
+   CPUSET=""
+fi
+
+export CXTC_LICENSE_FILE="@license1.xcp.chevrontexaco.net:@license2.xcp.chevrontexaco.net:@license3.xcp.chevrontexaco.net"
+export CHEARS_HOME="/chap/chears"
+export VER="devel"
+export CHEARS_LIB="$CHEARS_HOME/$VER/libc:/chap/libib/$VER:/chap/libgm/$VER"
+export LIBPATH="$CHEARS_LIB"
+export LD_LIBRARY_PATH="$CHEARS_LIB"
+export NETWORKCMD="sh -c '/chap/pipesoft/devel/sbin/ps2 -c chrstmp >> network.msg 2>&1'"
+export NETWORKERR="network.err"
+export NETWORKMSG="network.msg"
+$CPUSET "$CHEARS" < "wo10x10x3.deck" > fort.6 2>&1
+##/vend/toolworks/totalview.7.0.1-0/bin/totalview $CPUSET "$CHEARS" < "wo10x10x3.deck"
+
+"$POSTCHEARS" 1 "$tdf" > "$deckName.stdo" 2>&1
+if [ -s "$wkDir" ] ; then
+  "$POSTCHEARS" -cls "$wkDir" >/dev/null 2>&1
+fi
